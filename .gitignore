@@ -1,0 +1,102 @@
+# It's better to unpack these files and commit the raw source because
+# git has its own built in compression methods.
+*.7z
+*.jar
+*.rar
+*.zip
+*.gz
+*.bzip
+*.xz
+*.lzma
+
+#packing-only formats
+*.iso
+*.tar
+
+#package management formats
+*.dmg
+*.xpi
+*.gem
+*.egg
+*.deb
+*.rpm
+
+/CVS/*
+*/CVS/*
+.cvsignore
+*/.cvsignore
+
+.*
+!.gitignore
+*~
+
+# KDE
+.directory
+
+.DS_Store
+
+# Thumbnails
+._*
+
+# Files that might appear on external disk
+.Spotlight-V100
+.Trashes
+
+
+# SublimeText project files
+/*.sublime-project
+
+# TextMate
+*.tmproj
+*.tmproject
+tmtags
+
+# Windows image file caches
+Thumbs.db 
+
+# Folder config file
+Desktop.ini
+
+# Vim
+.*.sw[a-z]
+*.un~
+Session.vim
+
+# Django, Python
+*.log
+*.pot
+*.pyc
+local_settings.py
+*.py[co]
+
+# Packages
+*.egg
+*.egg-info
+dist
+build
+eggs
+parts
+bin
+var
+sdist
+develop-eggs
+.installed.cfg
+
+# Installer logs
+pip-log.txt
+
+# Unit test / coverage reports
+.coverage
+.tox
+nosetests.xml
+
+#Translations
+*.mo
+
+#Mr Developer
+.mr.developer.cfg
+
+# Project related
+mybox/
+test.py
+
