@@ -120,6 +120,8 @@ class RozeServer(object):
 
 
 class RozeIndexer(object):
+    """ Indexer process, which should request changed files in sync
+    from the server process."""
     
     def __init__(self, box_path):
         self.box_path = os.path.join(box_path)
