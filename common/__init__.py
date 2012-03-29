@@ -9,15 +9,15 @@ from hashlib import sha1
 CHUNKSIZE = 4096
 
 def hash_file(data):
-    
+
     size = str(os.path.getsize(data))
     basename = os.path.basename(data)
-    
+
     f = open(data, 'r')
 
     s = sha1()
     s.update("blob %s%s\0" % (size, basename,))
-    
+
     file = open(data, "rb")
     try:
         bytes_read = file.read(CHUNKSIZE)
@@ -27,7 +27,7 @@ def hash_file(data):
             bytes_read = file.read(CHUNKSIZE)
     finally:
         file.close()
-    
+
     return s.hexdigest()
 
 # "These aren't the chunks you're looking for" or some other SW quote.
