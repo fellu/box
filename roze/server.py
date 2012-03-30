@@ -79,38 +79,39 @@ class RozeServer(object): #threading.Thread):
             # Socket & address bound to the socket on the other end of the connection.
             self.s, a = self.c.accept()
             self.s.settimeout(35)
+            while True:
+                # For best match with hardware and network realities
+                # the value of chunk/buffer size should be and a
+                # relatively small power of 2.
+                try:
+                    data = self.s.recv(CHUNKSIZE).rstrip(os.linesep)
+                except socket.timeout:
+                    self.logger.info("Timeout detected")
+                    # Close the client connection
+                    self.s.close()
+                    break
 
-            # For best match with hardware and network realities
-            # the value of chunk/buffer size should be and a
-            # relatively small power of 2.
-            try:
-                data = self.s.recv(CHUNKSIZE).rstrip(os.linesep)
-            except socket.timeout:
-                self.logger.info("Timeout detected")
-                # Close the client connection
-                self.s.close()
-                continue
+                # Returns the string after the first occurence of "\n"
+                if data.find('\n') > 0:
+                    cmd = data[:data.find('\n')]
+                else:
+                    cmd = data
+                self.logger.info("Got command: '%s'\n" % cmd)
 
-            # Returns the string after the first occurence of "\n"
-            if data.find('\n') > 0:
-                cmd = data[:data.find('\n')]
-            else:
-                cmd = data
-            self.logger.info("Got command: '%s'\n" % cmd)
+                if cmd == 'GET':
+                    # Command & Filename
+                    cmd, fn = data.split('\n', 2)
+                    self._send_file(fn)
 
-            if cmd == 'GET':
-                # Command & Filename
-                cmd, fn = data.split('\n', 2)
-                self._send_file(fn)
+                if cmd == 'CLOSE':
+                    # Close socket
+                    self.s.close()
+                    break
 
-            if cmd == 'CLOSE':
-                # Close socket
-                self.s.close()
-                break
+                if cmd == 'LIST':
+                    file_listing = self.indexer.file_listing()
+                    self._send_data(file_listing)
 
-            if cmd == 'LIST':
-                file_listing = self.indexer.file_listing()
-                self._send_data(file_listing)
 
 
     def _start(self):
