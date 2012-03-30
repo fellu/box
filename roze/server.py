@@ -8,8 +8,9 @@ import datetime
 import logging
 from common import hash_file, CHUNKSIZE
 from log import logger
+from indexer import RozeIndexer
 
-class RozeServer(threading.Thread):
+class RozeServer(object): #threading.Thread):
     """ Main server class for receiving and sending files. Probably
     needs some fancy way to handle a pool of client connections through
     acl.
@@ -27,8 +28,11 @@ class RozeServer(threading.Thread):
         self.port = port
         self.logger = logging.getLogger('Server')
         self.logger.setLevel(logging.INFO)
-        threading.Thread.__init__(self)
+        
+        self.logger.info("Initializing indexer")
+        self.indexer = RozeIndexer('mybox/') 
 
+        #threading.Thread.__init__(self)
 
     def run(self):
         self.logger.info("Starting")
@@ -37,12 +41,22 @@ class RozeServer(threading.Thread):
     def stop(self):
         self._Thread__stop()
 
-    def _datasend(self, fn):
-        # Send ack
-        self.s.sendall('Ok')
-        
+    def _send_file(self, fn):
+
         with open(fn, 'rb') as f:
             data = f.read()
+        if self._send_data(data):
+            self.logger.info("\"%s\" sent!" % fn)
+        
+
+    def _ack(self, ackstr="Ok"):
+        # Send ack
+        self.s.sendall(ackstr)
+
+
+    def _send_data(self, data):
+        # Acknowledgement
+        self._ack()
         
         # Send size as signed 16–bytes integer.
         self.s.sendall('%16d' % len(data))
@@ -54,51 +68,66 @@ class RozeServer(threading.Thread):
         ack = self.s.recv(2)
 
         if ack.lower() == 'ok':
-            self.logger.info("File \"%s\" sent succesfully!" % fn)
+            return True
+        else:
+            return False
+        
 
     def _main(self):
-        
+
         while True:
+            # Socket & address bound to the socket on the other end of the connection.
+            self.s, a = self.c.accept()
+            self.s.settimeout(35)
+
             # For best match with hardware and network realities
             # the value of chunk/buffer size should be and a
             # relatively small power of 2.
-            data = self.s.recv(CHUNKSIZE)
+            try:
+                data = self.s.recv(CHUNKSIZE).rstrip(os.linesep)
+            except socket.timeout:
+                self.logger.info("Timeout detected")
+                # Close the client connection
+                self.s.close()
+                continue
 
             # Returns the string after the first occurence of "\n"
-            cmd = data[:data.find('\n')]
-            self.logger.info("Got command: '%s'" % cmd)
+            if data.find('\n') > 0:
+                cmd = data[:data.find('\n')]
+            else:
+                cmd = data
+            self.logger.info("Got command: '%s'\n" % cmd)
 
             if cmd == 'GET':
+                # Command & Filename
                 cmd, fn = data.split('\n', 2)
-                self._datasend(fn)
+                self._send_file(fn)
 
-            if cmd == 'CLOSE' or cmd == '':
+            if cmd == 'CLOSE':
                 # Close socket
                 self.s.close()
-                # Close connection
-                self.c.close()
                 break
-            if cmd == '':
-                self.s.sendall("Server did not understand you.")
-                # Close socket
-                self.s.close()
-                # Close connection
-                self.c.close()
-                break
+
+            if cmd == 'LIST':
+                file_listing = self.indexer.file_listing()
+                self._send_data(file_listing)
+
 
     def _start(self):
 
         # IPv4 Address family & standard socket stream.
         self.c = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 
+        # Fixes bug “Address already in use” -after socket has died/been killed.
+        self.c.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
         # Bind to all available interfaces.
         # Selected an arbitrary non-privileged port.
         self.c.bind(('0.0.0.0', 9191))
 
         # Accept only one client.
-        self.c.listen(1)
+        self.c.listen(5)
 
-        # Socket & address bound to the socket on the other end of the connection.
-        self.s, a = self.c.accept()
+        
         self._main()
 

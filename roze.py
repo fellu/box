@@ -31,14 +31,11 @@ class Roze(object):
         self.server = RozeServer(host, port)
         
         self.logger.info("Starting server")
-        self.server.start()
+        self.server.run()
 
-        self.logger.info("Initializing client")
-        self.client = RozeClient('127.0.0.1')
-        self.client.run()
-        
-        self.logger.info("Initializing indexer")
-        self.indexer = RozeIndexer(box_path) 
+        #self.logger.info("Initializing client")
+        #self.client = RozeClient('127.0.0.1')
+        #self.client.run()
 
     def kill(self):
         self.server.stop()
@@ -51,10 +48,12 @@ def main():
     try:
         # Just to test the scripts.
         R = Roze('localhost', 9191, 'mybox/')
-        # Run the indexer.
-        R.indexer.index()
-    except KeyboardInterrupt:
         R.kill()
+        # Run the indexer.
+        #R.indexer.index()
+    except KeyboardInterrupt:
+        print "\n\nExiting..\nBye.\n"
+        sys.exit(0)
 
 
 if __name__ == '__main__':

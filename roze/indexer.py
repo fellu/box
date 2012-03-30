@@ -6,6 +6,8 @@ import sys
 import socket
 import threading
 import datetime
+try: import simplejson as json
+except ImportError: import json
 from common import hash_file, CHUNKSIZE
 
 class RozeIndexer(object):
@@ -69,5 +71,17 @@ class RozeIndexer(object):
                 print "Found obsolete %s blob" % checksum
                 os.unlink(blob_path)
 
+    def file_listing(self, recursive=False):
+        listing = []
+
+        for infile in os.listdir(self.box_path):
+            # Todo: recursive listing?
+            if os.path.isdir(infile) or infile == '.meta':
+                continue
+            listing.append(infile)
+        return json.dumps(listing)
+
     def sync(self):
         raise NotImplementedError
+
+
