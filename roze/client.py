@@ -33,30 +33,23 @@ class RozeClient(object):
     """
 
     def get_file(self, fn):
-        cmd = 'GET\n%s' % (fn)
-        self.s.sendall(cmd)
-
-        # TODO: Save data to a file IN chunks.
-        # Now "data" is held in memory,
-        # causing serious issues.
-        data = self._receive_file(fn)
-
-        return data
-
-    def _receive_file(self, fn):
-
-        # Receive ack
+        cmd = u'GET\nmybox/%s' % fn
+        print "Fetching %s" % fn
+        s.sendall(cmd.encode("utf-8"))
         ack = self.s.recv(2)
+        print ack
         size = int(self.s.recv(16))
-        buf = ''
-
-        while size > len(buf):
-            data = self.s.recv(CHUNKSIZE)
-            if not data: 
+        print "Filesize: %s" % size 
+        recvd = ''
+        tmpfile = open(u'mybox/%s' % fn, 'wb')
+        while size > len(recvd):
+            print "DLed: %s" % len(recvd)
+            data = self.s.recv(4096)
+            if not data:
                 break
-            buf += data
-        self.s.sendall('Ok')
+            tmpfile.write(data)
+            recvd += data
+        tmpfile.close()
+        self.s.sendall('ok')
+        return recvd
 
-        return buf
-
-        

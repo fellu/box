@@ -8,7 +8,7 @@ import threading
 import datetime
 try: import simplejson as json
 except ImportError: import json
-from common import hash_file, CHUNKSIZE
+from common import hash_file, get_file_timetamp, get_file_size, CHUNKSIZE
 
 class RozeIndexer(object):
     """ Indexer process, which should request changed files in sync
@@ -31,9 +31,12 @@ class RozeIndexer(object):
             # Get file full path
             full_path = os.path.join(self.box_path, infile)
             checksum = hash_file(full_path)
+            timestamp = get_file_timetamp(full_path)
+            size = get_file_size(full_path)
+
 
             # Just to ease debugging.
-            data = '%s:%s\n' % (checksum, infile,)
+            data = '%s:%s:%s:%s\n' % (checksum, infile, timestamp, size)
 
             blobpath = os.path.join(self.registry, checksum)
 

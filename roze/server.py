@@ -47,7 +47,7 @@ class RozeServer(object): #threading.Thread):
             data = f.read()
         if self._send_data(data):
             self.logger.info("\"%s\" sent!" % fn)
-        
+
 
     def _ack(self, ackstr="Ok"):
         # Send ack
@@ -110,6 +110,7 @@ class RozeServer(object): #threading.Thread):
 
                 if cmd == 'LIST':
                     file_listing = self.indexer.file_listing()
+                    self.indexer.index()
                     self._send_data(file_listing)
 
 

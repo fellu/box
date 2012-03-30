@@ -8,6 +8,14 @@ from hashlib import sha1
 
 CHUNKSIZE = 4096
 
+def get_file_timetamp(data):
+    return os.path.getmtime(data)
+
+
+def get_file_size(data):
+    return str(os.path.getsize(data))
+
+
 def hash_file(data):
 
     size = str(os.path.getsize(data))

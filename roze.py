@@ -3,7 +3,7 @@
 
 __author__ = "incidence <incidence@iki.fi>"
 __copyright__ = "Copyright 2012, incidence"
-__credits__ = ["incidence"]
+__credits__ = ["incidence, fellu"]
 __license__ = "GPL"
 __version__ = "0.1.1"
 __maintainer__ = "incidence"
